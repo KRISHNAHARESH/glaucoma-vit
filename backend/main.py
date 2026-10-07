@@ -7,6 +7,7 @@ import base64
 from typing import List
 from datetime import timedelta
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
@@ -38,9 +39,13 @@ def get_predictor():
         mtime = os.path.getmtime(model_path)
         if predictor is None or last_model_mtime != mtime:
             try:
+                import gc
+                import torch
+                torch.set_num_threads(1)
                 from src.predict import GlaucomaPredictor
                 predictor = GlaucomaPredictor(model_path=model_path)
                 last_model_mtime = mtime
+                gc.collect()
                 print(f"Predictor loaded/updated with latest checkpoint (mtime: {mtime}).")
             except Exception as e:
                 print(f"Error loading predictor: {e}")
@@ -48,10 +53,47 @@ def get_predictor():
 
 @app.on_event("startup")
 def startup_event():
+    # Only initialize database tables at startup to keep memory minimal (~50MB) and boot instant
     models.Base.metadata.create_all(bind=engine)
-    # Load predictor in background thread so uvicorn binds the port immediately for cloud health checks
-    import threading
-    threading.Thread(target=get_predictor, daemon=True).start()
+
+@app.get("/", response_class=HTMLResponse)
+def root():
+    return """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glaucoma-ViT Detection API</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 36px; max-width: 520px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+    .badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; padding: 6px 14px; border-radius: 9999px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+    .dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
+    h1 { font-size: 24px; margin-bottom: 12px; color: #ffffff; letter-spacing: -0.5px; }
+    p { color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 28px; }
+    .links { display: flex; flex-direction: column; gap: 12px; }
+    .btn { display: block; text-align: center; text-decoration: none; padding: 13px 20px; border-radius: 10px; font-weight: 500; font-size: 14px; transition: all 0.15s ease; }
+    .btn-primary { background: #2563eb; color: #ffffff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #334155; color: #cbd5e1; }
+    .btn-secondary:hover { background: #475569; }
+    .meta { margin-top: 28px; padding-top: 18px; border-top: 1px solid #334155; font-size: 12px; color: #64748b; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge"><span class="dot"></span>Backend API Online</div>
+    <h1>Glaucoma-ViT Detection API</h1>
+    <p>The FastAPI cloud backend for glaucoma detection with Multi-Scale CNN &amp; Vision Transformer feature fusion is running successfully.</p>
+    <div class="links">
+      <a href="/docs" class="btn btn-primary">Open Interactive API Docs (Swagger UI) &rarr;</a>
+      <a href="/health" class="btn btn-secondary">Check Health Endpoint (JSON)</a>
+    </div>
+    <div class="meta">Glaucoma-ViT v1.0.0 &bull; Deployed on Render</div>
+  </div>
+</body>
+</html>"""
 
 @app.get("/health")
 def health_check():

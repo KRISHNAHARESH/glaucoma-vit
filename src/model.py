@@ -61,11 +61,11 @@ class GlaucomaViT(nn.Module):
         - Together, they understand BOTH local pathology AND global anatomy
     """
 
-    def __init__(self):
+    def __init__(self, pretrained_vit: bool = True):
         super().__init__()
         self.multiscale_cnn = MultiScaleCNN()
         self.feature_fusion = FeatureFusion()
-        self.vit = HybridViT()
+        self.vit = HybridViT(pretrained=pretrained_vit)
 
     def forward(self, x):
         """
@@ -154,25 +154,31 @@ class ViTBaseline(nn.Module):
         return self.vit.patch_embed.proj
 
 
-def get_model(model_type: str = "proposed") -> nn.Module:
+def get_model(model_type: str = "proposed", pretrained: bool = True) -> nn.Module:
     """
     Factory function to create a model by name.
 
     Args:
         model_type: One of "proposed", "cnn_baseline", "vit_baseline"
+        pretrained: Whether to download pretrained weights for ViT (set False during inference)
 
     Returns:
         nn.Module instance
     """
-    models = {
-        "proposed": GlaucomaViT,
-        "cnn_baseline": CNNBaseline,
-        "vit_baseline": ViTBaseline,
-    }
-    if model_type not in models:
-        raise ValueError(f"Unknown model type: {model_type}. Choose from {list(models.keys())}")
+    if model_type == "proposed":
+        model = GlaucomaViT(pretrained_vit=pretrained)
+    elif model_type == "cnn_baseline":
+        model = CNNBaseline()
+    elif model_type == "vit_baseline":
+        model = timm.create_model(
+            VIT_MODEL_NAME,
+            pretrained=pretrained,
+            num_classes=NUM_CLASSES,
+            drop_rate=DROPOUT_RATE,
+        )
+    else:
+        raise ValueError(f"Unknown model type: {model_type}. Choose from ['proposed', 'cnn_baseline', 'vit_baseline']")
 
-    model = models[model_type]()
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"\n[INFO] Model: {model_type}")

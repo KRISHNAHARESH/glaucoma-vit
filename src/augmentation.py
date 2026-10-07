@@ -22,6 +22,9 @@ IMPORTANT: Validation and test images receive NO augmentation — only the
 deterministic preprocessing pipeline (CLAHE + median filter + normalize).
 """
 
+import os
+os.environ["NO_ALBUMENTATIONS_UPDATE"] = "1"
+
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 import numpy as np

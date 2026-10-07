@@ -43,12 +43,18 @@ class GlaucomaPredictor:
                 "Please train the model first: python -m src.train"
             )
 
-        # Load model
-        self.model = get_model("proposed")
+        # Optimize PyTorch CPU threading for low-resource cloud servers
+        torch.set_num_threads(1)
+
+        # Load model structure without downloading pretrained weights
+        self.model = get_model("proposed", pretrained=False)
         checkpoint = torch.load(model_path, map_location=DEVICE, weights_only=False)
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.model = self.model.to(DEVICE)
         self.model.eval()
+        del checkpoint
+        import gc
+        gc.collect()
 
         # Grad-CAM setup
         target_layer = self.model.get_fusion_layer()

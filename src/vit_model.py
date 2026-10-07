@@ -74,13 +74,13 @@ class HybridViT(nn.Module):
                                                                    Output
     """
 
-    def __init__(self):
+    def __init__(self, pretrained: bool = VIT_PRETRAINED):
         super().__init__()
 
-        # Load pretrained ViT from timm
+        # Load ViT from timm (pretrained only if requested, e.g. for training)
         self.vit = timm.create_model(
             VIT_MODEL_NAME,
-            pretrained=VIT_PRETRAINED,
+            pretrained=pretrained,
             num_classes=0,          # Remove the original classification head
             drop_rate=DROPOUT_RATE,
         )

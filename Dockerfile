@@ -12,7 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy dependency specifications
 COPY requirements.txt .
 
-# Install python packages
+# Pre-install lightweight CPU-only PyTorch (reduces build time and memory usage)
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+# Install remaining python packages
 RUN pip install --no-cache-dir -r requirements.txt \
     fastapi uvicorn python-multipart "python-jose[cryptography]" "passlib[bcrypt]" bcrypt sqlalchemy python-dotenv email-validator "pydantic[email]"
 
