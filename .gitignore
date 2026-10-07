@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dataset (too large for git)
+dataset/
+
+# Trained model weights (best_model.pth is 68MB, within GitHub 100MB limit)
+models/*.pth
+!models/best_model.pth
+
+# Results (regeneratable)
+results/*.png
+results/*.json
+results/gradcam/
+
+# Node modules (frontend)
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# Logs
+*.log
