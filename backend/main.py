@@ -1,4 +1,5 @@
 import os
+os.environ["NO_ALBUMENTATIONS_UPDATE"] = "1"
 import sys
 import shutil
 import uuid
@@ -48,7 +49,9 @@ def get_predictor():
 @app.on_event("startup")
 def startup_event():
     models.Base.metadata.create_all(bind=engine)
-    get_predictor()
+    # Load predictor in background thread so uvicorn binds the port immediately for cloud health checks
+    import threading
+    threading.Thread(target=get_predictor, daemon=True).start()
 
 @app.get("/health")
 def health_check():

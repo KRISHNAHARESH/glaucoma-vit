@@ -21,8 +21,9 @@ COPY src/ ./src/
 COPY backend/ ./backend/
 COPY models/ ./models/
 
-ENV PORT=8000
-EXPOSE 8000
+ENV NO_ALBUMENTATIONS_UPDATE=1
+ENV PORT=10000
+EXPOSE 10000
 
-CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
 
