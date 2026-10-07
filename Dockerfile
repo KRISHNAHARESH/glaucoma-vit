@@ -14,7 +14,7 @@ COPY requirements.txt .
 
 # Install python packages
 RUN pip install --no-cache-dir -r requirements.txt \
-    fastapi uvicorn python-multipart "python-jose[cryptography]" "passlib[bcrypt]" bcrypt sqlalchemy python-dotenv
+    fastapi uvicorn python-multipart "python-jose[cryptography]" "passlib[bcrypt]" bcrypt sqlalchemy python-dotenv email-validator "pydantic[email]"
 
 # Copy source code and trained weights
 COPY src/ ./src/
