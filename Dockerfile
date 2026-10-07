@@ -23,6 +23,7 @@ RUN pip install --no-cache-dir -r requirements.txt \
 COPY src/ ./src/
 COPY backend/ ./backend/
 COPY models/ ./models/
+COPY frontend/dist/ ./frontend/dist/
 
 ENV NO_ALBUMENTATIONS_UPDATE=1
 ENV PORT=10000

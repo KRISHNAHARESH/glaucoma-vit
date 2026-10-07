@@ -1,5 +1,27 @@
 {
   "framework": "vite",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/auth/:path*",
+      "destination": "https://glaucoma-vit-main1.onrender.com/auth/:path*"
+    },
+    {
+      "source": "/predict",
+      "destination": "https://glaucoma-vit-main1.onrender.com/predict"
+    },
+    {
+      "source": "/health",
+      "destination": "https://glaucoma-vit-main1.onrender.com/health"
+    },
+    {
+      "source": "/history",
+      "destination": "https://glaucoma-vit-main1.onrender.com/history"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
