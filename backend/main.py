@@ -17,15 +17,10 @@ from .database import engine, get_db
 
 app = FastAPI(title="Glaucoma-ViT Backend API", version="1.0.0")
 
-# Setup CORS
-origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-]
-
+# Setup CORS (Allow localhost, Vercel deployments, and external domains)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

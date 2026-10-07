@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
@@ -8,9 +8,10 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=6)
     confirm_password: str
 
-    @validator("confirm_password")
-    def passwords_match(cls, v, values, **kwargs):
-        if "password" in values and v != values["password"]:
+    @field_validator("confirm_password")
+    @classmethod
+    def passwords_match(cls, v: str, info):
+        if "password" in info.data and v != info.data["password"]:
             raise ValueError("Passwords do not match")
         return v
 
@@ -19,13 +20,12 @@ class UserLogin(BaseModel):
     password: str
 
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     email: EmailStr
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -41,15 +41,13 @@ class PredictionResponse(BaseModel):
     created_at: Optional[datetime] = None
     disclaimer: str = "This is an AI-assisted prediction and should not replace professional medical advice. Please consult an ophthalmologist for a definitive diagnosis."
 
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)
+ 
 class HistoryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     image_filename: str
     prediction: str
     confidence: float
     created_at: datetime
-
-    class Config:
-        from_attributes = True
