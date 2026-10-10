@@ -167,20 +167,34 @@ const AnalyzePage = () => {
                 <Sparkles className="w-4 h-4 text-cyan-600" />
                 <span>Quick Test with Preloaded Clinical Samples:</span>
               </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
-                  onClick={() => loadSample('/samples/sample_normal.jpg', 'Normal_Fundus_Sample.jpg')}
-                  className="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 text-xs font-semibold hover:bg-emerald-100 transition-colors"
+                  onClick={() => loadSample('/samples/sample_normal.jpg', 'ACRIMA_Normal_Eye.jpg')}
+                  className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 text-xs font-semibold hover:bg-emerald-100 transition-colors"
                 >
-                  Load Normal Eye
+                  ACRIMA Normal
                 </button>
                 <button
                   type="button"
-                  onClick={() => loadSample('/samples/sample_glaucoma.jpg', 'Glaucoma_Fundus_Sample.jpg')}
-                  className="flex-1 sm:flex-initial px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-300 text-xs font-semibold hover:bg-rose-100 transition-colors"
+                  onClick={() => loadSample('/samples/sample_glaucoma.jpg', 'ACRIMA_Glaucoma_Eye.jpg')}
+                  className="px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-300 text-xs font-semibold hover:bg-rose-100 transition-colors"
                 >
-                  Load Glaucoma Eye
+                  ACRIMA Glaucoma
+                </button>
+                <button
+                  type="button"
+                  onClick={() => loadSample('/samples/google_normal.jpg', 'Google_Normal_LeftEye.jpg')}
+                  className="px-2.5 py-1.5 rounded-lg bg-cyan-50 text-cyan-700 border border-cyan-300 text-xs font-semibold hover:bg-cyan-100 transition-colors"
+                >
+                  Google Normal Eye
+                </button>
+                <button
+                  type="button"
+                  onClick={() => loadSample('/samples/google_glaucoma.jpg', 'Google_Glaucoma_Disc.jpg')}
+                  className="px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-300 text-xs font-semibold hover:bg-amber-100 transition-colors"
+                >
+                  Google Glaucoma Eye
                 </button>
               </div>
             </div>
