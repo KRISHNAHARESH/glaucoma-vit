@@ -108,18 +108,24 @@ def preprocess_image(image_path: str) -> np.ndarray:
         Preprocessed RGB image as numpy array (H, W, 3) with uint8 values.
         Returns None if image cannot be read.
     """
-    # Step 1: Read image (OpenCV loads as BGR by default)
-    image = cv2.imread(str(image_path))
-    if image is None:
-        print(f"[WARNING] Could not read image: {image_path}")
-        return None
-
-    # Step 2: Convert BGR → RGB
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    # Step 3: Resize to standard dimensions (224×224)
-    # Uses bilinear interpolation for smooth scaling
-    image = cv2.resize(image, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_LINEAR)
+    # Step 1: Read image with memory-safe PIL draft downsampling
+    try:
+        from PIL import Image
+        with Image.open(str(image_path)) as pil_img:
+            # Downsample immediately on decode to prevent 50MB+ RAM allocation
+            pil_img.draft('RGB', (IMAGE_SIZE * 2, IMAGE_SIZE * 2))
+            if pil_img.mode != 'RGB':
+                pil_img = pil_img.convert('RGB')
+            pil_img = pil_img.resize((IMAGE_SIZE, IMAGE_SIZE), Image.Resampling.BILINEAR)
+            image = np.array(pil_img, dtype=np.uint8)
+    except Exception:
+        # Fallback to OpenCV
+        image = cv2.imread(str(image_path))
+        if image is None:
+            print(f"[WARNING] Could not read image: {image_path}")
+            return None
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(image, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_LINEAR)
 
     # Step 4: Apply CLAHE for contrast enhancement
     image = apply_clahe(image)

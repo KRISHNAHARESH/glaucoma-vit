@@ -6,7 +6,7 @@ import uuid
 import base64
 from typing import List, Optional
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -166,16 +166,32 @@ def predict_image(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error during prediction: {str(e)}")
     finally:
-        # Clean up temp file
+        # Clean up temp file and trigger garbage collection
         if os.path.exists(file_path):
             try:
                 os.remove(file_path)
             except OSError:
                 pass
+        import gc
+        gc.collect()
 
 @app.get("/history", response_model=List[schemas.HistoryResponse])
-def get_history(current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
-    """Get prediction history for the authenticated user."""
+def get_history(
+    request: Request,
+    current_user: Optional[models.User] = Depends(auth.get_optional_current_user), 
+    db: Session = Depends(get_db)
+):
+    """Get prediction history, or serve SPA page if navigated directly in browser."""
+    if "text/html" in request.headers.get("accept", ""):
+        index_file = os.path.join(frontend_dist, "index.html")
+        if os.path.exists(index_file):
+            response = FileResponse(index_file)
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            return response
+
+    if not current_user:
+        return []
+
     history = db.query(models.Prediction).filter(models.Prediction.user_id == current_user.id).order_by(models.Prediction.created_at.desc()).all()
     return history
 

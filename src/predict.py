@@ -113,6 +113,9 @@ class GlaucomaPredictor:
             else:
                 heatmap = np.zeros((IMAGE_SIZE, IMAGE_SIZE), dtype=np.float32)
 
+            del f1, f2, f3, fused, cam, output, input_tensor
+            gc.collect()
+
         overlay = create_overlay(display_image, heatmap)
 
         return {
@@ -134,26 +137,29 @@ class GlaucomaPredictor:
         """
         result = self.predict(image_path=image_path, image_array=image_array)
 
-        # Convert images to base64 for JSON transport
+        # Convert images to base64 using JPEG for minimal memory footprint
         def numpy_to_base64(img_array):
             img = cv2.cvtColor(img_array.astype(np.uint8), cv2.COLOR_RGB2BGR)
-            _, buffer = cv2.imencode(".png", img)
+            _, buffer = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 90])
             return base64.b64encode(buffer).decode("utf-8")
 
         def heatmap_to_base64(heatmap):
             colored = cv2.applyColorMap(
                 (heatmap * 255).astype(np.uint8), cv2.COLORMAP_JET
             )
-            _, buffer = cv2.imencode(".png", colored)
+            _, buffer = cv2.imencode(".jpg", colored, [cv2.IMWRITE_JPEG_QUALITY, 90])
             return base64.b64encode(buffer).decode("utf-8")
 
-        return {
+        response_dict = {
             "prediction": result["prediction"],
             "confidence": result["confidence"],
             "probabilities": result["probabilities"],
             "heatmap": heatmap_to_base64(result["heatmap"]),
             "overlay": numpy_to_base64(result["overlay"]),
         }
+        del result
+        gc.collect()
+        return response_dict
 
 
 def main():
