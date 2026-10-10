@@ -4,8 +4,8 @@ import sys
 import shutil
 import uuid
 import base64
-from typing import List
-from datetime import timedelta
+from typing import List, Optional
+from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -103,7 +103,7 @@ def login(user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
 @app.post("/predict", response_model=schemas.PredictionResponse)
 def predict_image(
     file: UploadFile = File(...), 
-    current_user: models.User = Depends(auth.get_current_user),
+    current_user: Optional[models.User] = Depends(auth.get_optional_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -138,25 +138,30 @@ def predict_image(
         # predict_to_json returns JSON-serializable dict with base64 images
         result = active_predictor.predict_to_json(image_path=file_path)
         
-        # Save prediction to database
-        db_prediction = models.Prediction(
-            user_id=current_user.id,
-            image_filename=unique_filename,
-            prediction=result["prediction"],
-            confidence=result["confidence"]
-        )
-        db.add(db_prediction)
-        db.commit()
-        db.refresh(db_prediction)
+        pred_id = None
+        created_time = datetime.utcnow()
+        if current_user:
+            # Save prediction to database for authenticated user
+            db_prediction = models.Prediction(
+                user_id=current_user.id,
+                image_filename=unique_filename,
+                prediction=result["prediction"],
+                confidence=result["confidence"]
+            )
+            db.add(db_prediction)
+            db.commit()
+            db.refresh(db_prediction)
+            pred_id = db_prediction.id
+            created_time = db_prediction.created_at
             
         return schemas.PredictionResponse(
-            id=db_prediction.id,
+            id=pred_id,
             prediction=result["prediction"],
             confidence=result["confidence"],
             probabilities=result.get("probabilities", {}),
             heatmap=result.get("heatmap"),
             overlay=result.get("overlay"),
-            created_at=db_prediction.created_at
+            created_at=created_time
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error during prediction: {str(e)}")

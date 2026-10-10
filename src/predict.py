@@ -10,20 +10,18 @@ Usage:
 import argparse
 import base64
 import io
+import gc
 from pathlib import Path
 
 import cv2
 import numpy as np
 import torch
-import matplotlib
-matplotlib.use("Agg")  # Non-interactive backend for server use
-import matplotlib.pyplot as plt
 
 from src.config import DEVICE, BEST_MODEL_PATH, CLASS_NAMES, IMAGE_SIZE
 from src.preprocessing import preprocess_image
 from src.augmentation import get_val_test_augmentation
 from src.model import get_model
-from src.gradcam import GradCAM, create_overlay
+from src.gradcam import create_overlay
 
 
 class GlaucomaPredictor:
@@ -31,7 +29,8 @@ class GlaucomaPredictor:
     High-level prediction interface for single fundus images.
 
     Loads the trained model once and provides predict() for repeated use.
-    Also generates Grad-CAM heatmaps for each prediction.
+    Generates class activation heatmaps with zero-graph inference mode
+    to stay well within cloud memory bounds (512MB RAM).
     """
 
     def __init__(self, model_path: str = None):
@@ -48,22 +47,17 @@ class GlaucomaPredictor:
 
         # Load model structure without downloading pretrained weights
         self.model = get_model("proposed", pretrained=False)
-        checkpoint = torch.load(model_path, map_location=DEVICE, weights_only=False)
+        checkpoint = torch.load(model_path, map_location=DEVICE, weights_only=False, mmap=True)
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.model = self.model.to(DEVICE)
         self.model.eval()
         del checkpoint
-        import gc
         gc.collect()
-
-        # Grad-CAM setup
-        target_layer = self.model.get_fusion_layer()
-        self.gradcam = GradCAM(self.model, target_layer)
 
         # Transform for inference
         self.transform = get_val_test_augmentation()
 
-        print("[INFO] GlaucomaPredictor initialized successfully")
+        print("[INFO] GlaucomaPredictor initialized successfully with memory-mapped weights")
 
     def predict(self, image_path: str = None, image_array: np.ndarray = None):
         """
@@ -97,18 +91,28 @@ class GlaucomaPredictor:
         transformed = self.transform(image=display_image)
         input_tensor = transformed["image"].unsqueeze(0).to(DEVICE)
 
-        # Forward pass
-        with torch.no_grad():
-            output = self.model(input_tensor)
+        # Ultra-low memory forward pass in inference mode
+        with torch.inference_mode():
+            f1, f2, f3 = self.model.multiscale_cnn(input_tensor)
+            fused = self.model.feature_fusion(f1, f2, f3)
+            output = self.model.vit(fused)
             probs = torch.softmax(output, dim=1)
 
-        pred_class = output.argmax(dim=1).item()
-        confidence = probs[0, pred_class].item()
+            pred_class = output.argmax(dim=1).item()
+            confidence = probs[0, pred_class].item()
 
-        # Generate Grad-CAM
-        # Need to re-enable gradients for Grad-CAM
-        input_tensor.requires_grad_(True)
-        heatmap = self.gradcam.generate(input_tensor)
+            # Class Activation Map (CAM) directly from fusion feature projections
+            # Projects target class weights back onto the multi-scale spatial grid
+            head_weight = self.model.vit.classification_head[-1].weight[pred_class].view(1, -1, 1, 1)
+            cam = torch.relu(torch.sum(head_weight * fused, dim=1, keepdim=True))
+            cam = torch.nn.functional.interpolate(cam, size=(IMAGE_SIZE, IMAGE_SIZE), mode="bilinear", align_corners=False)
+            cam_np = cam.squeeze().cpu().numpy()
+
+            if cam_np.max() > cam_np.min():
+                heatmap = (cam_np - cam_np.min()) / (cam_np.max() - cam_np.min())
+            else:
+                heatmap = np.zeros((IMAGE_SIZE, IMAGE_SIZE), dtype=np.float32)
+
         overlay = create_overlay(display_image, heatmap)
 
         return {
