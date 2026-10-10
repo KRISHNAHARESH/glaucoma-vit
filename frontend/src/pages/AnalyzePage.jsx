@@ -8,19 +8,43 @@ import {
 
 const AnalyzePage = () => {
   const [selectedImage, setSelectedImage] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState(() => {
+    return sessionStorage.getItem('glaucoma_last_preview') || null;
+  });
   const [loading, setLoading] = useState(false);
   const [analysisStep, setAnalysisStep] = useState('');
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('glaucoma_last_result');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
+
+  const savePreview = (file) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result;
+      setPreview(base64);
+      try {
+        sessionStorage.setItem('glaucoma_last_preview', base64);
+      } catch (e) {
+        // handle storage quota if large
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedImage(file);
-      setPreview(URL.createObjectURL(file));
+      savePreview(file);
       setResult(null);
+      sessionStorage.removeItem('glaucoma_last_result');
       setError('');
     }
   };
@@ -34,8 +58,9 @@ const AnalyzePage = () => {
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
       setSelectedImage(file);
-      setPreview(URL.createObjectURL(file));
+      savePreview(file);
       setResult(null);
+      sessionStorage.removeItem('glaucoma_last_result');
       setError('');
     }
   };
@@ -45,11 +70,12 @@ const AnalyzePage = () => {
     try {
       setError('');
       setResult(null);
+      sessionStorage.removeItem('glaucoma_last_result');
       const res = await fetch(samplePath);
       const blob = await res.blob();
       const file = new File([blob], sampleName, { type: 'image/jpeg' });
       setSelectedImage(file);
-      setPreview(URL.createObjectURL(file));
+      savePreview(file);
     } catch (err) {
       setError('Could not load sample image: ' + err.message);
     }
@@ -76,6 +102,11 @@ const AnalyzePage = () => {
         }
       });
       setResult(response.data);
+      try {
+        sessionStorage.setItem('glaucoma_last_result', JSON.stringify(response.data));
+      } catch (e) {
+        // quota fallback
+      }
     } catch (err) {
       setError(err.response?.data?.detail || 'An error occurred during inference. Please verify server connection.');
     } finally {
@@ -89,6 +120,8 @@ const AnalyzePage = () => {
     setPreview(null);
     setResult(null);
     setError('');
+    sessionStorage.removeItem('glaucoma_last_result');
+    sessionStorage.removeItem('glaucoma_last_preview');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 

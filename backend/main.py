@@ -191,14 +191,22 @@ if os.path.exists(frontend_dist) and os.path.exists(os.path.join(frontend_dist, 
 
     @app.get("/")
     def serve_frontend_root():
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+        response = FileResponse(os.path.join(frontend_dist, "index.html"))
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 
     @app.get("/{full_path:path}")
     def serve_frontend_spa(full_path: str):
         target = os.path.join(frontend_dist, full_path)
         if full_path and os.path.isfile(target):
             return FileResponse(target)
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+        response = FileResponse(os.path.join(frontend_dist, "index.html"))
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 else:
     @app.get("/", response_class=HTMLResponse)
     def serve_fallback_root():
