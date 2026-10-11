@@ -1,64 +1,205 @@
 @import "tailwindcss";
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
   body {
     margin: 0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: #070708;
+    color: #f8fafc;
   }
 }
 
-/* Glassmorphism & Medical Accents */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+.font-serif {
+  font-family: 'Instrument Serif', 'Playfair Display', Georgia, Cambria, 'Times New Roman', serif;
 }
 
-.glass-panel-dark {
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(51, 65, 85, 0.7);
+/* Clinical Dark Mode Card Design */
+.clinical-card {
+  background: #111114;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.glow-teal {
-  box-shadow: 0 0 25px -5px rgba(20, 184, 166, 0.3);
+.clinical-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
 }
 
-.glow-emerald {
-  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.35);
+/* =========================================================================
+   PREMIUM MICRO-ANIMATIONS & GLASS INTERACTION SYSTEM
+   ========================================================================= */
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
-.glow-rose {
-  box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.35);
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
 }
 
-/* Subtle Animated Mesh Grid */
-.bg-grid-pattern {
-  background-size: 32px 32px;
+@keyframes scan-laser {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-100%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+  }
+}
+
+.animate-float {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #B96445, #f59e0b, #B96445, transparent);
+  box-shadow: 0 0 16px 2px rgba(185, 100, 69, 0.8), 0 0 6px 1px rgba(245, 158, 11, 0.6);
+  animation: scan-laser 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+/* Shimmer Light-Sweep Sheen on Hover */
+.glass-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-sheen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  transform: skewX(-22deg);
+  transition: transform 0.75s ease-in-out;
+  pointer-events: none;
+}
+
+.glass-sheen:hover::after {
+  transform: translateX(380%) skewX(-22deg);
+}
+
+/* Smooth Interactive Glass Elevation */
+.interactive-card {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease,
+              background-color 0.3s ease;
+}
+
+.interactive-card:hover {
+  transform: translateY(-4px) scale(1.008);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.7),
+              0 0 24px -4px rgba(185, 100, 69, 0.25);
+}
+
+.interactive-card:active {
+  transform: translateY(-1px) scale(0.995);
+}
+
+/* Tactile Micro-Button Interaction */
+.btn-micro {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s ease,
+              background-color 0.2s ease;
+}
+
+.btn-micro:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+.btn-micro:active {
+  transform: translateY(0px) scale(0.97);
+}
+
+/* Subtle Dark Medical Grid */
+.bg-medical-subtle {
+  background-size: 28px 28px;
   background-image: 
-    linear-gradient(to right, rgba(226, 232, 240, 0.6) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(226, 232, 240, 0.6) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
 }
 
-.bg-grid-dark {
-  background-size: 36px 36px;
-  background-image: 
-    linear-gradient(to right, rgba(51, 65, 85, 0.3) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(51, 65, 85, 0.3) 1px, transparent 1px);
+/* Dark Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #070708;
+}
+::-webkit-scrollbar-thumb {
+  background: #222226;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #33333a;
 }
 
-/* Keyframe animations */
-@keyframes pulseSubtle {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(1.02); }
-}
-
-.animate-pulse-subtle {
-  animation: pulseSubtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+/* Print Styling for Clinical Analysis Reports */
+@media print {
+  header, nav, footer, .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .print-area {
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
 }

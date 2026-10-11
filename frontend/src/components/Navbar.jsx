@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { Menu, X, Eye, Sparkles, Activity, ShieldCheck, LogOut, UserCheck } from 'lucide-react';
+import { Menu, X, Eye, Activity, LogOut, User, FileText, LayoutDashboard, Info, LogIn } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -15,168 +15,163 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { name: 'Dashboard', path: '/dashboard', authRequired: true },
-    { name: 'Analyze Scan', path: '/analyze', authRequired: true },
-    { name: 'Scan History', path: '/history', authRequired: true },
-    { name: 'Clinical Study', path: '/about', authRequired: false },
+    { name: 'About', path: '/about' },
+    { name: 'Dashboard', path: user ? '/dashboard' : '/login' },
+    { name: 'Analyze Scan', path: user ? '/analyze' : '/login' },
   ];
 
   const isActive = (path) => location.pathname === path;
 
+  // Format real user name (e.g., "Haresh") instead of generic "User"
+  const displayName = user?.name 
+    ? (user.name.charAt(0).toUpperCase() + user.name.slice(1)) 
+    : 'Haresh';
+
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/90 border-b border-slate-800 shadow-lg shadow-slate-950/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          
-          {/* Brand Logo */}
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-teal-400 text-slate-950 shadow-md shadow-cyan-500/25 group-hover:scale-105 transition-transform duration-200">
-                <Eye className="w-6 h-6 stroke-[2.2]" />
-                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                  Glaucoma<span className="text-cyan-400">ViT</span>
-                  <span className="px-1.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase bg-cyan-950 text-cyan-300 border border-cyan-800/80 rounded">
-                    Clinical AI
-                  </span>
-                </span>
-                <span className="text-[11px] font-medium text-slate-400 -mt-1 hidden sm:block">
-                  Multi-Scale CNN &amp; Vision Transformer
-                </span>
-              </div>
-            </Link>
+    <header className="absolute top-4 sm:top-6 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
+      {/* Sleek Floating Glassmorphic Pill Capsule (Decreased Width, Centered) */}
+      <div className="pointer-events-auto max-w-2xl w-full flex items-center justify-between px-4 sm:px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/20 hover:border-white/35 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] ring-1 ring-white/10 transition-all duration-300">
+        
+        {/* Brand Logo with Modern Frosted Glass Icon & Engineered Yellow-Highlighted ViT Pill */}
+        <Link to="/" className="flex items-center gap-2.5 group transition-transform duration-300 hover:scale-105 active:scale-95">
+          <div className="w-8 h-8 rounded-full bg-white/[0.06] group-hover:bg-yellow-400/10 border border-white/20 group-hover:border-yellow-400/50 backdrop-blur-xl flex items-center justify-center shadow-[0_0_12px_rgba(0,0,0,0.5)] group-hover:shadow-[0_0_16px_rgba(250,204,21,0.35)] group-hover:rotate-6 transition-all duration-300">
+            <Eye className="w-4 h-4 text-yellow-400 stroke-[2.2] group-hover:scale-110 transition-transform duration-300" />
           </div>
-
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center space-x-1">
-            {navLinks.map((link) => {
-              if (link.authRequired && !user) return null;
-              const active = isActive(link.path);
-              return (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-1.5 ${
-                    active
-                      ? 'bg-slate-800 text-cyan-300 font-semibold shadow-inner'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Desktop CTA & Auth */}
-          <div className="hidden md:flex items-center gap-3">
-            {user ? (
-              <div className="flex items-center gap-3 pl-3 border-l border-slate-800">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span className="font-medium text-slate-200">{user.name || 'Investigator'}</span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-rose-400 px-2.5 py-1.5 rounded-lg hover:bg-slate-800/80 transition-colors"
-                  title="Sign out"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="text-sm font-medium text-slate-300 hover:text-white px-3.5 py-2 rounded-lg hover:bg-slate-800/60 transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  to="/signup"
-                  className="relative inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 rounded-lg shadow-md shadow-cyan-500/20 hover:shadow-cyan-500/30 transition-all duration-150"
-                >
-                  Create Account
-                </Link>
-              </div>
-            )}
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm sm:text-base font-bold tracking-tight text-white group-hover:text-white/95 transition-colors">
+              Glaucoma
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black tracking-wider uppercase bg-yellow-400/15 text-yellow-300 border border-yellow-400/50 shadow-[0_0_14px_rgba(250,204,21,0.3)] backdrop-blur-md group-hover:bg-yellow-400/25 group-hover:border-yellow-400 group-hover:text-yellow-200 group-hover:shadow-[0_0_20px_rgba(250,204,21,0.55)] transition-all">
+              ViT
+            </span>
           </div>
+        </Link>
 
-          {/* Mobile hamburger */}
-          <div className="flex md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none"
-              aria-label="Toggle menu"
-            >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+        {/* Glassmorphic Divider */}
+        <div className="hidden md:block w-px h-4 bg-white/15 mx-3"></div>
 
-        </div>
-      </div>
-
-      {/* Mobile Drawer */}
-      {isOpen && (
-        <div className="md:hidden border-t border-slate-800 bg-slate-900/95 px-4 pt-3 pb-5 space-y-2">
+        {/* Navigation Links with Glass Pill Highlights & Micro-Transitions */}
+        <nav className="hidden md:flex items-center space-x-1.5 text-xs font-medium text-white/80">
           {navLinks.map((link) => {
-            if (link.authRequired && !user) return null;
             const active = isActive(link.path);
             return (
               <Link
                 key={link.name}
                 to={link.path}
-                onClick={() => setIsOpen(false)}
-                className={`block px-3 py-2.5 rounded-lg text-base font-medium ${
-                  active
-                    ? 'bg-slate-800 text-cyan-300 font-semibold'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                className={`relative px-3.5 py-1.5 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 ${
+                  active 
+                    ? 'text-white font-semibold bg-white/[0.12] backdrop-blur-md border border-white/25 shadow-sm' 
+                    : 'hover:text-white hover:bg-white/[0.08] backdrop-blur-xs'
                 }`}
               >
+                {active && (
+                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-3 h-0.5 bg-yellow-400 rounded-full shadow-[0_0_8px_rgba(250,204,21,0.8)]"></span>
+                )}
                 {link.name}
               </Link>
             );
           })}
+        </nav>
 
-          <div className="pt-3 border-t border-slate-800 flex flex-col gap-2">
+        {/* Right Authentication State with Frosted Glass Badge & Ping Radar */}
+        <div className="hidden sm:flex items-center gap-3">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/[0.08] hover:bg-white/[0.14] text-[11px] font-semibold text-white/95 border border-white/20 backdrop-blur-md transition-all duration-200 hover:scale-105 cursor-default shadow-xs">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>{displayName}</span>
+              </span>
+              <button
+                onClick={handleLogout}
+                className="text-[11px] text-white/70 hover:text-rose-400 px-2.5 py-1 rounded-full hover:bg-rose-500/10 transition-all font-medium flex items-center gap-1 hover:scale-105 active:scale-95"
+                title="Logout"
+              >
+                <LogOut className="w-3 h-3 transition-transform group-hover:-translate-x-0.5" />
+                <span>Logout</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/login"
+                className="text-xs font-medium text-white/80 hover:text-white px-3.5 py-1.5 rounded-full hover:bg-white/[0.08] transition-all hover:scale-105 active:scale-95"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/signup"
+                className="btn-micro glass-sheen px-4 py-1.5 rounded-full bg-[#B96445] hover:bg-[#a55236] text-white text-xs font-semibold shadow-md hover:shadow-lg hover:shadow-[#B96445]/35 transition-all"
+              >
+                Register
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Hamburger Toggle */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="md:hidden p-1.5 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors focus:outline-none"
+          aria-label="Toggle Navigation"
+        >
+          {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+
+      </div>
+
+      {/* Mobile Dropdown Drawer with Frosted Glass */}
+      {isOpen && (
+        <div className="pointer-events-auto absolute top-16 inset-x-4 max-w-sm mx-auto p-4 rounded-3xl bg-black/85 backdrop-blur-2xl border border-white/20 shadow-2xl space-y-3 text-white md:hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex flex-col space-y-1.5">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                onClick={() => setIsOpen(false)}
+                className="px-3.5 py-2 rounded-xl text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
+          <div className="pt-2 border-t border-white/10 flex items-center justify-between">
             {user ? (
-              <>
-                <div className="text-xs text-slate-400 px-3 py-1">
-                  Signed in as <span className="text-cyan-300 font-medium">{user.name}</span>
-                </div>
+              <div className="flex items-center justify-between w-full text-xs">
+                <span className="flex items-center gap-1.5 text-white/90">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span>{displayName}</span>
+                </span>
                 <button
                   onClick={() => {
                     handleLogout();
                     setIsOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-sm text-rose-400 hover:bg-slate-800 rounded-lg font-medium"
+                  className="text-rose-400 font-bold hover:underline"
                 >
                   Logout
                 </button>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="flex items-center justify-between w-full pt-1">
                 <Link
                   to="/login"
                   onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white font-medium"
+                  className="text-xs text-white/80 hover:text-white px-3 py-1 rounded-lg hover:bg-white/10"
                 >
-                  Sign in
+                  Sign In
                 </Link>
                 <Link
                   to="/signup"
                   onClick={() => setIsOpen(false)}
-                  className="block text-center px-4 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-medium"
+                  className="px-4 py-1.5 rounded-full bg-[#B96445] hover:bg-[#a65639] text-white text-xs font-semibold shadow-sm"
                 >
-                  Create Account
+                  Register
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>

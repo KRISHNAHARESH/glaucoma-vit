@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Eye, Mail, Lock, ArrowRight, ShieldCheck, AlertTriangle } from 'lucide-react';
 
@@ -10,6 +10,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,7 +18,8 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await login(email, password);
-      navigate('/dashboard');
+      const target = location.state?.from?.pathname || '/analyze';
+      navigate(target);
     } catch (err) {
       setError(err.response?.data?.detail || 'Invalid email or password. Please try again.');
     } finally {
@@ -26,80 +28,85 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-teal-400 text-slate-950 shadow-md shadow-cyan-500/20 mb-4">
-          <Eye className="w-7 h-7 stroke-[2.2]" />
+    <div className="min-h-screen bg-[#070708] flex flex-col justify-center pt-28 pb-16 px-4 sm:px-6 lg:px-8 text-white font-sans selection:bg-[#B96445] selection:text-white relative overflow-hidden">
+      {/* Subtle ambient lighting glows to give frosted glass depth and refraction */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#B96445]/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-white/[0.06] hover:bg-white/[0.12] text-amber-300 border border-white/20 hover:border-white/35 backdrop-blur-xl shadow-lg hover:shadow-[#B96445]/20 hover:scale-110 transition-all duration-300 mb-3 cursor-pointer">
+          <Eye className="w-6 h-6 stroke-[2.2]" />
         </div>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          Investigator Portal
+        <h2 className="text-3xl font-extrabold text-white tracking-tight">
+          Sign In to Glaucoma <span className="text-[#E89271] hover:text-amber-200 transition-colors">ViT</span>
         </h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Sign in to access your Glaucoma-ViT diagnostic workspace
+        <p className="mt-1 text-xs text-white/70">
+          Access your diagnostic history and saved retinal analyses
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-        <div className="bg-white py-8 px-6 sm:px-10 shadow-xl shadow-slate-200/50 rounded-2xl border border-slate-200">
-          <form className="space-y-5" onSubmit={handleSubmit}>
+      <div className="mt-7 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0 relative z-10">
+        <div className="bg-white/[0.04] hover:bg-white/[0.06] backdrop-blur-2xl py-8 px-6 sm:px-8 shadow-[0_16px_48px_0_rgba(0,0,0,0.5)] hover:shadow-[#B96445]/10 rounded-3xl border border-white/15 hover:border-white/25 transition-all duration-300">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-800 p-3.5 rounded-xl text-xs flex items-start gap-2.5">
-                <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+              <div className="bg-rose-950/40 border border-rose-800/80 text-rose-300 p-3 rounded-xl text-xs flex items-start gap-2 shadow-xs">
+                <AlertTriangle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
                 <p>{error}</p>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Investigator Email
+              <label className="block text-xs font-semibold text-white/80 uppercase tracking-wider mb-1">
+                Email Address
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   required
-                  placeholder="doctor@hospital.org"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
+                  placeholder="doctor@example.com"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-white/10 hover:border-white/25 focus:border-[#B96445] text-xs text-white focus:outline-none bg-white/[0.04] placeholder-white/40 transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-white/80 uppercase tracking-wider mb-1">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-white/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   required
-                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-white/10 hover:border-white/25 focus:border-[#B96445] text-xs text-white focus:outline-none bg-white/[0.04] placeholder-white/40 transition-colors"
                 />
               </div>
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 shadow-md shadow-cyan-500/20 transition-all duration-150"
-              >
-                {loading ? 'Authenticating...' : 'Sign In to Workspace'}
-                {!loading && <ArrowRight className="w-4 h-4" />}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-full font-bold text-white text-xs shadow-md transition-all duration-300 ${
+                loading 
+                  ? 'bg-white/10 text-white/40 cursor-not-allowed' 
+                  : 'bg-[#B96445] hover:bg-[#a65639] shadow-lg shadow-[#B96445]/25 hover:shadow-2xl hover:shadow-[#B96445]/50 hover:scale-[1.02] active:scale-[0.98] group'
+              }`}
+            >
+              <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+            </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-slate-100 text-center">
-            <p className="text-xs text-slate-500">
-              Need research access?{' '}
-              <Link to="/signup" className="font-semibold text-cyan-700 hover:text-cyan-800 underline">
-                Create Investigator Account
+          <div className="mt-5 pt-4 border-t border-white/10 text-center">
+            <p className="text-xs text-white/60">
+              Don't have an account?{' '}
+              <Link to="/signup" className="font-bold text-amber-300 hover:text-amber-200 underline-offset-4 hover:underline transition-all">
+                Register here
               </Link>
             </p>
           </div>

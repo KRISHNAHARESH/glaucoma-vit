@@ -11,31 +11,35 @@ import DashboardPage from './pages/DashboardPage';
 import AnalyzePage from './pages/AnalyzePage';
 import HistoryPage from './pages/HistoryPage';
 import AboutPage from './pages/AboutPage';
-import { Eye, ShieldCheck, Heart, Sparkles, ExternalLink } from 'lucide-react';
+import { Eye, ShieldCheck, Info, FileText } from 'lucide-react';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-cyan-500 selection:text-white">
+        <div className="flex flex-col min-h-screen bg-[#070708] text-slate-100 font-sans selection:bg-[#B96445] selection:text-white">
           <Navbar />
           
           <main className="flex-grow">
             <Routes>
               <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
               <Route path="/about" element={<AboutPage />} />
               
-              {/* Protected Diagnostic Routes */}
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              } />
+              {/* Protected Clinical Workspace - Only authenticated users can analyze retinal images */}
               <Route path="/analyze" element={
                 <ProtectedRoute>
                   <AnalyzePage />
+                </ProtectedRoute>
+              } />
+              
+              {/* Authentication */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              
+              {/* Protected Clinical Records */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <DashboardPage />
                 </ProtectedRoute>
               } />
               <Route path="/history" element={
@@ -46,70 +50,102 @@ function App() {
             </Routes>
           </main>
           
-          {/* Clinical Medical Footer */}
-          <footer className="bg-slate-950 text-slate-400 border-t border-slate-800 text-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Professional Healthcare Dark Obsidian & Terracotta Footer */}
+          <footer className="bg-[#070708] border-t border-white/10 text-white/70 text-xs">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 
-                {/* Brand Column */}
-                <div className="md:col-span-2 space-y-3">
-                  <div className="flex items-center gap-2 text-white font-bold text-lg">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-teal-400 text-slate-950 flex items-center justify-center">
-                      <Eye className="w-4 h-4 stroke-[2.5]" />
+                {/* Brand & Purpose */}
+                <div className="md:col-span-2 space-y-2.5">
+                  <div className="flex items-center gap-2.5 text-white font-bold text-base">
+                    <div className="w-8 h-8 rounded-lg bg-[#B96445]/20 text-amber-300 flex items-center justify-center border border-[#B96445]/40 shadow-xs">
+                      <Eye className="w-4 h-4 stroke-[2.2]" />
                     </div>
-                    <span>Glaucoma<span className="text-cyan-400">ViT</span></span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono">
-                      v1.0.0
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold tracking-tight text-white">
+                        Glaucoma <span className="text-[#E89271] font-extrabold">ViT</span>
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/10 text-amber-300 border border-white/15">
+                        CLINICAL AI
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-                    Automated, explainable glaucoma detection pipeline integrating Multi-Scale Convolutional Neural Networks, 
-                    Vision Transformers, and Grad-CAM for medical decision support.
+                  <p className="text-[11px] text-amber-300/80 font-mono">
+                    Multi-Scale CNN &amp; Vision Transformer
                   </p>
-                  <div className="flex items-center gap-2 pt-1 text-xs text-slate-500">
-                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span>FastAPI &bull; PyTorch &bull; ACRIMA Dataset</span>
-                  </div>
+                  <p className="text-xs text-white/60 leading-relaxed max-w-md">
+                    A state-of-the-art diagnostic research system combining multi-scale convolutional feature fusion with self-attention Vision Transformers to detect structural optic nerve damage and deliver transparent Grad-CAM explanations.
+                  </p>
                 </div>
 
-                {/* Quick Navigation */}
+                {/* Navigation Links */}
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-3">Diagnostic Tools</h4>
-                  <ul className="space-y-2 text-xs">
-                    <li><Link to="/analyze" className="hover:text-cyan-300 transition-colors">Analyze Fundus Scan</Link></li>
-                    <li><Link to="/dashboard" className="hover:text-cyan-300 transition-colors">Clinical Dashboard</Link></li>
-                    <li><Link to="/history" className="hover:text-cyan-300 transition-colors">Patient Scan History</Link></li>
-                    <li><Link to="/about" className="hover:text-cyan-300 transition-colors">Research Rationale</Link></li>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-white/90 mb-3">
+                    Navigation
+                  </h4>
+                  <ul className="space-y-2 text-xs text-white/60">
+                    <li>
+                      <Link to="/" className="hover:text-amber-200 hover:translate-x-1 inline-flex transition-all duration-200">
+                        Home
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/analyze" className="hover:text-amber-200 font-medium text-amber-300 hover:translate-x-1 inline-flex transition-all duration-200">
+                        Analyze Scan
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/about" className="hover:text-amber-200 hover:translate-x-1 inline-flex transition-all duration-200">
+                        Clinical Study
+                      </Link>
+                    </li>
+                    <li>
+                      <Link to="/dashboard" className="hover:text-amber-200 hover:translate-x-1 inline-flex transition-all duration-200">
+                        Dashboard
+                      </Link>
+                    </li>
                   </ul>
                 </div>
 
-                {/* Compliance & API */}
+                {/* Medical System Status */}
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-3">API &amp; Docs</h4>
-                  <ul className="space-y-2 text-xs">
-                    <li>
-                      <a href="https://glaucoma-vit-main1.onrender.com/docs" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-300 transition-colors inline-flex items-center gap-1">
-                        FastAPI Swagger Docs <ExternalLink className="w-3 h-3" />
-                      </a>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-white/90 mb-3">
+                    System Status
+                  </h4>
+                  <ul className="space-y-2 text-xs text-white/60">
+                    <li className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span>ViT Inference: Online</span>
                     </li>
-                    <li>
-                      <a href="https://glaucoma-vit-main1.onrender.com/health" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-300 transition-colors inline-flex items-center gap-1">
-                        API Health Status <ExternalLink className="w-3 h-3" />
-                      </a>
+                    <li className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                      <span>Grad-CAM Visualizer: Active</span>
                     </li>
-                    <li className="pt-2 text-[11px] text-slate-500">
-                      Academic Engineering Project &bull; {new Date().getFullYear()}
+                    <li className="pt-1">
+                      <Link to="/login" className="text-amber-300 hover:text-white font-semibold">
+                        Sign In to Save History
+                      </Link>
                     </li>
                   </ul>
                 </div>
 
               </div>
 
-              {/* Bottom Bar */}
-              <div className="pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-3">
-                <p>&copy; {new Date().getFullYear()} Glaucoma-ViT Academic Project. Strictly for research and educational purposes.</p>
-                <p className="flex items-center gap-1">
-                  <span>Engineered with PyTorch, Timm &amp; React</span>
+              {/* Medical Disclaimer Callout */}
+              <div className="pt-6 pb-6 border-t border-white/10">
+                <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-start gap-3 text-[11px] text-white/60 leading-relaxed">
+                  <Info className="w-4 h-4 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <p>
+                    <strong>Medical Disclaimer:</strong> Glaucoma ViT is an assistive decision-support research application. Model outputs and Grad-CAM heatmaps are provided for informational and clinical review purposes only and do not replace professional medical advice, clinical diagnosis, tonometry, or evaluation by a licensed ophthalmologist.
+                  </p>
+                </div>
+              </div>
+
+              {/* Bottom Copyright */}
+              <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-[11px] text-white/50 gap-2">
+                <p>&copy; {new Date().getFullYear()} Glaucoma ViT. All rights reserved.</p>
+                <p className="flex items-center gap-1 text-white/60">
+                  <span>Ophthalmology Deep Learning Research</span>
                 </p>
               </div>
             </div>

@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { 
-  FileText, ShieldCheck, ShieldAlert, Search, Filter, 
-  Eye, Calendar, ArrowRight, RefreshCw, AlertCircle 
+  FileText, Search, Filter, ShieldCheck, ShieldAlert, 
+  Eye, RefreshCw, AlertCircle, ArrowRight
 } from 'lucide-react';
 
 const HistoryPage = () => {
@@ -11,19 +11,18 @@ const HistoryPage = () => {
   const [filteredHistory, setFilteredHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filterType, setFilterType] = useState('ALL'); // ALL, NORMAL, GLAUCOMA
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('ALL');
 
   const fetchHistory = async () => {
     setLoading(true);
     setError('');
     try {
       const response = await api.get('/history');
-      const data = response.data || [];
-      setHistory(data);
-      setFilteredHistory(data);
+      setHistory(response.data || []);
+      setFilteredHistory(response.data || []);
     } catch (err) {
-      setError('Unable to load patient records. Please verify server connectivity.');
+      setError('Failed to load analysis records. Please ensure the backend is connected.');
     } finally {
       setLoading(false);
     }
@@ -38,7 +37,7 @@ const HistoryPage = () => {
 
     if (filterType === 'NORMAL') {
       result = result.filter(item => 
-        item.prediction?.toLowerCase().includes('non') || item.prediction?.toLowerCase() === 'normal'
+        item.prediction?.toLowerCase().includes('non') || item.prediction?.toLowerCase().includes('normal')
       );
     } else if (filterType === 'GLAUCOMA') {
       result = result.filter(item => 
@@ -46,11 +45,12 @@ const HistoryPage = () => {
       );
     }
 
-    if (searchQuery.trim()) {
+    if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();
       result = result.filter(item => 
+        (item.image_filename && item.image_filename.toLowerCase().includes(q)) ||
         (item.prediction && item.prediction.toLowerCase().includes(q)) ||
-        (item.created_at && item.created_at.toLowerCase().includes(q))
+        (item.id && item.id.toString().includes(q))
       );
     }
 
@@ -58,21 +58,21 @@ const HistoryPage = () => {
   }, [filterType, searchQuery, history]);
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#070708] pt-28 pb-16 px-4 sm:px-6 lg:px-8 text-white font-sans selection:bg-[#B96445] selection:text-white">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-100 text-cyan-800 text-xs font-semibold uppercase tracking-wider mb-2">
-              <FileText className="w-3.5 h-3.5 text-cyan-600" />
-              Patient Registry
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white/90 text-xs font-semibold uppercase tracking-wider mb-2 border border-white/15 shadow-xs">
+              <FileText className="w-3.5 h-3.5 text-[#B96445]" />
+              <span>Diagnostic Archive</span>
             </div>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-              Diagnostic Scan History
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Scan History &amp; Records
             </h1>
-            <p className="text-slate-600 text-sm mt-1">
-              Historical archive of all evaluated fundus photography and classification outcomes.
+            <p className="text-white/60 text-sm mt-1 font-light">
+              Historical record of your evaluated retinal fundus photographs and outcomes.
             </p>
           </div>
 
@@ -80,170 +80,150 @@ const HistoryPage = () => {
             <button
               onClick={fetchHistory}
               disabled={loading}
-              className="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 shadow-sm transition-colors"
-              title="Refresh Records"
+              className="p-2.5 rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.1] hover:border-white/30 text-white/80 hover:text-white shadow-xs hover:scale-105 active:scale-95 transition-all duration-200"
+              title="Refresh Registry"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
             <Link
               to="/analyze"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 shadow-md shadow-cyan-500/20 text-xs transition-all"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-white bg-[#B96445] hover:bg-[#a65639] shadow-lg shadow-[#B96445]/25 hover:shadow-2xl hover:shadow-[#B96445]/40 text-xs transition-all duration-300 hover:scale-105 active:scale-95 group"
             >
-              <Eye className="w-4 h-4" />
+              <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
               <span>New Analysis</span>
             </Link>
           </div>
         </div>
 
-        {/* Filter Toolbar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
+        {/* Filter & Search Toolbar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-3xl bg-[#111114] hover:border-white/20 border border-white/10 shadow-xl transition-all duration-300">
           
-          {/* Filter Pills */}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          {/* Search Box */}
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search filename or outcome..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 rounded-xl border border-white/10 hover:border-white/25 text-xs focus:outline-none focus:border-[#B96445] bg-white/[0.04] text-white placeholder-white/40 transition-colors"
+            />
+          </div>
+
+          {/* Filter Pills with Interactive Hover States */}
+          <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
+            <span className="text-xs font-semibold text-white/60 mr-2 flex items-center gap-1">
+              <Filter className="w-3.5 h-3.5" />
+              Filter:
+            </span>
             <button
               onClick={() => setFilterType('ALL')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 border ${
                 filterType === 'ALL'
-                  ? 'bg-slate-900 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-[#B96445] text-white border-[#B96445] shadow-md shadow-[#B96445]/30'
+                  : 'bg-white/[0.04] text-white/60 border-white/10 hover:bg-white/[0.1] hover:text-white'
               }`}
             >
-              All Scans ({history.length})
+              All ({history.length})
             </button>
             <button
               onClick={() => setFilterType('NORMAL')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 border ${
                 filterType === 'NORMAL'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                  ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-600/30'
+                  : 'bg-white/[0.04] text-emerald-400 border-white/10 hover:bg-emerald-500/20 hover:text-emerald-300'
               }`}
             >
-              Normal Only
+              Normal
             </button>
             <button
               onClick={() => setFilterType('GLAUCOMA')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 border ${
                 filterType === 'GLAUCOMA'
-                  ? 'bg-rose-600 text-white shadow-sm'
-                  : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
+                  ? 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-600/30'
+                  : 'bg-white/[0.04] text-rose-400 border-white/10 hover:bg-rose-500/20 hover:text-rose-300'
               }`}
             >
-              Glaucoma Only
+              Flagged
             </button>
-          </div>
-
-          {/* Search Box */}
-          <div className="relative w-full sm:w-64">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search records..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors"
-            />
           </div>
 
         </div>
 
-        {/* Records Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
+        {/* History Table or Empty State with Row Hover */}
+        <div className="bg-[#111114] rounded-3xl border border-white/10 hover:border-white/20 shadow-xl transition-all duration-300 overflow-hidden">
           {loading ? (
-            <div className="py-20 text-center space-y-3">
-              <RefreshCw className="w-8 h-8 text-cyan-600 animate-spin mx-auto" />
-              <p className="text-sm text-slate-500">Loading diagnostic history...</p>
+            <div className="p-16 text-center text-xs text-white/60 space-y-2">
+              <RefreshCw className="w-5 h-5 animate-spin mx-auto text-[#B96445]" />
+              <p>Fetching analysis records...</p>
             </div>
           ) : error ? (
-            <div className="p-8 text-center space-y-2">
-              <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
-              <p className="text-sm font-semibold text-rose-700">{error}</p>
-              <button
-                onClick={fetchHistory}
-                className="mt-2 px-4 py-1.5 text-xs rounded-lg bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100"
-              >
-                Retry
-              </button>
+            <div className="p-10 text-center text-xs text-rose-400 space-y-2">
+              <AlertCircle className="w-5 h-5 mx-auto" />
+              <p>{error}</p>
             </div>
           ) : filteredHistory.length === 0 ? (
-            <div className="py-20 text-center space-y-3">
-              <FileText className="w-10 h-10 text-slate-300 mx-auto" />
-              <h3 className="text-base font-bold text-slate-800">No Patient Records Found</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                {searchQuery || filterType !== 'ALL' 
-                  ? 'No scans match your current filter settings. Try clearing your search.' 
-                  : 'Start your clinical evaluation by analyzing your first fundus scan.'}
-              </p>
-              <Link
-                to="/analyze"
-                className="inline-flex items-center gap-2 mt-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800"
-              >
-                Analyze Fundus Scan &rarr;
-              </Link>
+            <div className="p-16 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-white/[0.04] text-white/40 mx-auto flex items-center justify-center border border-white/10">
+                <FileText className="w-6 h-6 stroke-[1.8]" />
+              </div>
+              <div className="max-w-sm mx-auto space-y-1">
+                <h3 className="text-sm font-bold text-white">
+                  {searchQuery || filterType !== 'ALL' ? 'No matching records found' : 'No scan history recorded'}
+                </h3>
+                <p className="text-xs text-white/60 leading-relaxed font-light">
+                  {searchQuery || filterType !== 'ALL' 
+                    ? 'Try adjusting your search query or filter selection.' 
+                    : 'Evaluated fundus scans will be archived here once you run an analysis.'}
+                </p>
+              </div>
+              <div className="pt-2">
+                <Link
+                  to="/analyze"
+                  className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full text-xs font-bold text-white bg-[#B96445] hover:bg-[#a65639] transition-all duration-300 shadow-md hover:shadow-xl hover:shadow-[#B96445]/30 hover:scale-105 active:scale-95"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Analyze an Image</span>
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-600">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-white/[0.03] text-white/80 font-bold uppercase tracking-wider text-[11px] border-b border-white/10">
                   <tr>
-                    <th className="py-4 px-6">Timestamp &amp; ID</th>
-                    <th className="py-4 px-6">Classification Outcome</th>
-                    <th className="py-4 px-6">ViT Confidence</th>
-                    <th className="py-4 px-6 text-right">Status</th>
+                    <th className="py-3.5 px-5">Image Identifier</th>
+                    <th className="py-3.5 px-5">Diagnostic Outcome</th>
+                    <th className="py-3.5 px-5">Confidence Score</th>
+                    <th className="py-3.5 px-5">Recorded Timestamp</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredHistory.map((item, idx) => {
-                    const isGl = item.prediction?.toLowerCase().includes('glaucoma') && !item.prediction?.toLowerCase().includes('non');
-                    const conf = Math.round((item.confidence || 0.95) * 100);
-                    const dateFormatted = new Date(item.created_at || item.date || Date.now()).toLocaleDateString('en-US', {
-                      month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                    });
+                <tbody className="divide-y divide-white/5 text-white/80">
+                  {filteredHistory.map((scan) => {
+                    const isGlauc = scan.prediction?.toLowerCase().includes('glaucoma') && !scan.prediction?.toLowerCase().includes('non');
+                    const conf = scan.confidence != null ? (scan.confidence * 100).toFixed(1) + '%' : '—';
+                    const dateStr = scan.created_at ? new Date(scan.created_at).toLocaleString() : 'Recent';
 
                     return (
-                      <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-4 px-6">
-                          <div className="font-semibold text-slate-900 flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-slate-400" />
-                            <span>{dateFormatted}</span>
-                          </div>
-                          <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                            ID: #{item.id || idx + 101}
-                          </div>
+                      <tr key={scan.id} className="hover:bg-white/[0.05] transition-all duration-200 cursor-pointer group">
+                        <td className="py-3.5 px-5 font-mono text-white font-medium group-hover:text-amber-200 transition-colors">
+                          {scan.image_filename || `Record #${scan.id}`}
                         </td>
-
-                        <td className="py-4 px-6">
-                          <div className="flex items-center gap-2.5">
-                            <div className={`p-1.5 rounded-lg ${
-                              isGl ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'
-                            }`}>
-                              {isGl ? <ShieldAlert className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
-                            </div>
-                            <span className="font-bold text-slate-900">
-                              {isGl ? 'GLAUCOMA' : 'NORMAL'}
-                            </span>
-                          </div>
-                        </td>
-
-                        <td className="py-4 px-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-24 bg-slate-200 rounded-full h-2 overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${isGl ? 'bg-rose-600' : 'bg-emerald-600'}`}
-                                style={{ width: `${conf}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-xs font-semibold text-slate-700">{conf}%</span>
-                          </div>
-                        </td>
-
-                        <td className="py-4 px-6 text-right">
-                          <span className={`inline-flex px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                            isGl 
-                              ? 'bg-rose-100 text-rose-800 border border-rose-200' 
-                              : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        <td className="py-3.5 px-5">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition-all group-hover:scale-105 ${
+                            isGlauc 
+                              ? 'bg-rose-500/15 text-rose-300 border border-rose-500/30' 
+                              : 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                           }`}>
-                            {isGl ? 'Risk Flagged' : 'Normal Disc'}
+                            {isGlauc ? <ShieldAlert className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
+                            {scan.prediction}
                           </span>
+                        </td>
+                        <td className="py-3.5 px-5 font-bold text-white group-hover:text-amber-200 transition-colors">
+                          {conf}
+                        </td>
+                        <td className="py-3.5 px-5 text-white/50 font-mono text-[11px]">
+                          {dateStr}
                         </td>
                       </tr>
                     );

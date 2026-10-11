@@ -97,7 +97,12 @@ def login(user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     access_token = auth.create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "user": user}
+
+@app.get("/auth/me", response_model=schemas.UserResponse)
+def get_me(current_user: models.User = Depends(auth.get_current_user)):
+    """Return authenticated user profile."""
+    return current_user
 
 
 @app.post("/predict", response_model=schemas.PredictionResponse)
@@ -204,6 +209,10 @@ if os.path.exists(frontend_dist) and os.path.exists(os.path.join(frontend_dist, 
     assets_dir = os.path.join(frontend_dist, "assets")
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    images_dir = os.path.join(frontend_dist, "images")
+    if os.path.exists(images_dir):
+        app.mount("/images", StaticFiles(directory=images_dir), name="images")
 
     @app.get("/")
     def serve_frontend_root():

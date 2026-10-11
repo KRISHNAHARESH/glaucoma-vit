@@ -12,12 +12,12 @@ set "PATH=C:\Program Files\nodejs;%PATH%"
 echo [1/3] Starting Backend API (FastAPI on Port 8000)...
 start "Glaucoma Backend API" /min cmd /c "cd /d "%~dp0" && python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000"
 
-timeout /t 3 /nobreak >nul
+ping -n 3 127.0.0.1 >nul
 
 echo [2/3] Starting Frontend UI (React + Vite on Port 5173)...
 start "Glaucoma Frontend" /min cmd /c "cd /d "%~dp0frontend" && npm run dev -- --host 0.0.0.0"
 
-timeout /t 3 /nobreak >nul
+ping -n 3 127.0.0.1 >nul
 
 echo [3/3] Starting Public Cloudflare Tunnel...
 echo.
