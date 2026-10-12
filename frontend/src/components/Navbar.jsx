@@ -28,7 +28,7 @@ const Navbar = () => {
     : 'Haresh';
 
   return (
-    <header className="absolute top-4 sm:top-6 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
+    <header className="absolute top-4 sm:top-6 inset-x-0 z-20 flex justify-center px-4 pointer-events-none">
       {/* Sleek Floating Glassmorphic Pill Capsule (Decreased Width, Centered) */}
       <div className="pointer-events-auto max-w-2xl w-full flex items-center justify-between px-4 sm:px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.09] backdrop-blur-2xl border border-white/20 hover:border-white/35 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] ring-1 ring-white/10 transition-all duration-300">
         

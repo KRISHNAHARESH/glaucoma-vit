@@ -64,30 +64,36 @@ const LandingPage = () => {
     <div className="min-h-screen bg-[#070708] text-white font-sans selection:bg-[#B96445] selection:text-white overflow-x-hidden">
       
       {/* =========================================================================
-          HERO SECTION — BALANCED TWO-COLUMN EDITORIAL CINEMATIC HERO
-          Matches Reference Design & Layout Grid
+          HERO SECTION — LAYERED EDITORIAL CINEMATIC MEDICAL-AI HERO
+          Layer 0 (z-0): Macro eye background image
+          Layer 1 (z-[1]): Subtle dark gradient overlay
+          Layer 2 (z-[2]): Interactive text hierarchy & CTA buttons
+          Managed via CSS isolation: isolate stacking context
          ========================================================================= */}
-      <section className="group/hero relative min-h-[92vh] lg:min-h-screen w-full flex items-center overflow-hidden bg-[#070708] pt-24 pb-16 sm:pt-28 sm:pb-20 lg:pt-0 lg:pb-0">
+      <section className="relative isolate min-h-[92vh] lg:min-h-screen w-full flex items-center overflow-hidden bg-[#070708] pt-28 pb-16 sm:pt-32 sm:pb-20 lg:pt-0 lg:pb-0">
         
-        {/* Full-Bleed Ultra-HD Cinematic Macro Eye Background */}
+        {/* Layer 0: Macro Eye Background Photograph (position: absolute, z-index: 0) */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
           <img
             src="/images/cinematic_eye_hero.jpg"
             alt="Cinematic macro photograph of human eye with golden-amber iris, detailed eyelashes, and natural skin texture"
-            className="w-full h-full object-cover object-[75%_center] sm:object-[78%_center] lg:object-[82%_center] opacity-100 transition-transform duration-1000 ease-out group-hover/hero:scale-[1.01]"
+            className="w-full h-full object-cover object-[75%_center] sm:object-[78%_center] lg:object-[82%_center] opacity-100"
             loading="eager"
           />
+        </div>
+
+        {/* Layer 1: Subtle Dark Gradient Overlay (position: absolute, z-index: 1) */}
+        <div className="absolute inset-0 z-[1] pointer-events-none select-none" aria-hidden="true">
+          {/* Strong dark gradient on left for text legibility, softening toward right to preserve eye details */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#070708] via-[#070708]/95 via-32% sm:via-38% md:via-[#070708]/85 md:via-42% lg:via-[#070708]/80 lg:via-46% to-transparent to-75%"></div>
           
-          {/* Targeted Left Gradient: Provides pristine text contrast on the left without touching or clouding the eye on the right */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#070708] from-10% via-[#070708]/95 via-32% to-transparent to-55%"></div>
-          
-          {/* Subtle Top & Bottom Edge Vignettes */}
+          {/* Subtle top & bottom edge vignettes for smooth transitions */}
           <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-[#070708] to-transparent"></div>
           <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#070708] to-transparent"></div>
         </div>
 
-        {/* Main Content Layout Container — Aligned to Page Grid (max-w-7xl px-4 sm:px-6 lg:px-8) */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-0">
+        {/* Layer 2: Main Content Layout Container (position: relative, z-index: 2) */}
+        <div className="relative z-[2] w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-0">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[70vh] lg:min-h-[82vh]">
             
             {/* Left Column: Text Hierarchy (7 columns on desktop, 100% on mobile) */}
